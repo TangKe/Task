@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Task</string>
+    <string name="label_summary">About the task execute status, please see the logcat</string>
+    <string name="button_execute_tasks">Execute Tasks</string>
+</resources>
