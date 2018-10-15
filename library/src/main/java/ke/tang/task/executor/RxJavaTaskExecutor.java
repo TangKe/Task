@@ -55,6 +55,8 @@ public class RxJavaTaskExecutor implements TaskExecutor<Flowable<?>> {
         @Override
         public void onError(Throwable t) {
             mExecuteResult.deliverError(t);
+            mExecuteResult.complete();
+            mExecutingTasks.remove(mJob);
         }
 
         @Override
