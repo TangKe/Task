@@ -6,7 +6,11 @@ import android.view.View;
 
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import ke.tang.task.Task;
 import ke.tang.task.TaskHost;
 import ke.tang.task.TaskJob;
@@ -27,13 +31,11 @@ public class MainActivity extends AppCompatActivity implements TaskHost, View.On
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.executes:
-                for (int index = 0; index < 5; index++) {
-                    Task.start(this,
-                            TaskJob.createRxJavaJob(Flowable.just("Task Test").delay((long) (Math.random() * 10000), TimeUnit.MILLISECONDS)),
-                            r -> {
-                            }, e -> {
-                            }, false);
-                }
+                Task.start(this,
+                        TaskJob.createRxJavaJob(Observable.just("Task Test").delay((long) (Math.random() * 10000), TimeUnit.MILLISECONDS)),
+                        r -> {
+                        }, e -> {
+                        }, true);
                 break;
         }
     }

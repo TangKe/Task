@@ -11,7 +11,7 @@ import io.reactivex.schedulers.Schedulers;
 import ke.tang.task.TaskExecuteResult;
 import ke.tang.task.TaskJob;
 
-public class RxJavaTaskExecutor implements TaskExecutor<Flowable<?>> {
+public class RxJavaFlowableTaskExecutor implements TaskExecutor<Flowable<?>> {
     private ConcurrentHashMap<TaskJob<?, Flowable<?>>, Subscription> mExecutingTasks = new ConcurrentHashMap<>();
 
     @Override

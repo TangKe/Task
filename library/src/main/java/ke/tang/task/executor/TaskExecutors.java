@@ -9,7 +9,11 @@ public class TaskExecutors {
     private static ConcurrentHashMap<String, TaskExecutor<?>> sExecutors = new ConcurrentHashMap<>();
 
     static {
-        registerTaskExecutor(JobTypes.RXJAVA, new RxJavaTaskExecutor());
+        registerTaskExecutor(JobTypes.RXJAVA_FLOWABLE, new RxJavaFlowableTaskExecutor());
+        registerTaskExecutor(JobTypes.RXJAVA_OBSERVABLE, new RxJavaObservableTaskExecutor());
+        registerTaskExecutor(JobTypes.RXJAVA_COMPLETABLE, new RxJavaCompletableTaskExecutor());
+        registerTaskExecutor(JobTypes.RXJAVA_SINGLE, new RxJavaSingleTaskExecutor());
+        registerTaskExecutor(JobTypes.RXJAVA_MAYBE, new RxJavaMaybeTaskExecutor());
         registerTaskExecutor(JobTypes.ASYNC_TASK, new AsyncTaskExecutor());
     }
 
