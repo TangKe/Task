@@ -53,6 +53,10 @@ public class TaskExecuteResult<Result> {
     public void complete() {
         if (!hasPendingResults() && !hasPendingErrors()) {
             Log.i(LOG_TAG, "Task@" + mTask.hashCode() + " complete");
+            final OnTaskCompleteListener completeListener = mTask.getCompleteListener();
+            if (null != completeListener) {
+                completeListener.onComplete();
+            }
             mTask.stop();
         } else {
             Log.i(LOG_TAG, "Task@" + mTask.hashCode() + " complete, but has pending results, will re deliver results to listener when Task next resumed");

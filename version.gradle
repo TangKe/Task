@@ -1,0 +1,16 @@
+ext {
+    versions =
+            [
+                    compileSdkVersion: 27,
+                    minSdkVersion    : 15,
+                    targetSdkVersion : 27,
+                    versionCode      : 3,
+                    versionName      : '1.0.3',
+                    library          : [
+                            support         : '27.1.1',
+                            rxandroid       : '2.1.0',
+                            rxjava          : '2.2.4',
+                            constraintLayout: '1.1.2'
+                    ]
+            ]
+}

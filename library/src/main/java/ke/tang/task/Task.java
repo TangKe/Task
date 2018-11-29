@@ -19,6 +19,7 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
     final static String LOG_TAG = "Task";
     private OnTaskResultListener<? super Result> mResultListener;
     private OnTaskErrorListener mErrorListener;
+    private OnTaskCompleteListener mCompleteListener;
 
     private TaskJob<Result, Job> mJob;
     private boolean mIsExecuted;
@@ -29,26 +30,109 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
     private boolean mShowProgress;
     private String mUUID;
 
-    public static <Result, Job> Task<Result, Job> start(TaskHost host, TaskJob<Result, Job> job, OnTaskResultListener<? super Result> resultListener, OnTaskErrorListener errorListener, boolean showProgress, Progress optinalProgress) {
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskErrorListener errorListener,
+                                                        OnTaskCompleteListener completeListener,
+                                                        boolean showProgress,
+                                                        Progress optionalProgress) {
         Task<Result, Job> task = new Task<>();
         task.setResultListener(resultListener);
         task.setErrorListener(errorListener);
+        task.setCompleteListener(completeListener);
         if (null == host) {
             throw new IllegalArgumentException("You must provide a TaskHost instance");
         }
         task.setJob(job);
         task.setShowProgress(showProgress);
-        task.setProgress(optinalProgress);
+        task.setProgress(optionalProgress);
         host.onAttachTask(task);
         return task;
     }
 
-    public static <Result, Job> Task<Result, Job> start(TaskHost host, TaskJob<Result, Job> job, OnTaskResultListener<? super Result> resultListener, OnTaskErrorListener errorListener, boolean showProgress) {
-        return start(host, job, resultListener, errorListener, showProgress, null);
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskErrorListener errorListener,
+                                                        OnTaskCompleteListener completeListener,
+                                                        boolean showProgress) {
+        return start(host, job, resultListener, errorListener, completeListener, showProgress, null);
     }
 
-    public static <Result, Job> Task<Result, Job> start(TaskHost host, TaskJob<Result, Job> job, OnTaskResultListener<? super Result> resultListener, OnTaskErrorListener errorListener) {
-        return start(host, job, resultListener, errorListener, false);
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskErrorListener errorListener,
+                                                        OnTaskCompleteListener completeListener) {
+        return start(host, job, resultListener, errorListener, completeListener, false, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskCompleteListener completeListener,
+                                                        boolean showProgress) {
+        return start(host, job, resultListener, null, completeListener, showProgress, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskCompleteListener completeListener) {
+        return start(host, job, resultListener, null, completeListener, false, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskErrorListener errorListener,
+                                                        boolean showProgress) {
+        return start(host, job, resultListener, errorListener, null, showProgress, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        OnTaskErrorListener errorListener) {
+        return start(host, job, resultListener, errorListener, null, false, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener,
+                                                        boolean showProgress) {
+        return start(host, job, resultListener, null, null, showProgress, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskResultListener<? super Result> resultListener) {
+        return start(host, job, resultListener, null, null, false, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskCompleteListener completeListener,
+                                                        boolean showProgress) {
+        return start(host, job, null, null, completeListener, showProgress, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        OnTaskCompleteListener completeListener) {
+        return start(host, job, null, null, completeListener, false, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job,
+                                                        boolean showProgress) {
+        return start(host, job, null, null, null, showProgress, null);
+    }
+
+    public static <Result, Job> Task<Result, Job> start(TaskHost host,
+                                                        TaskJob<Result, Job> job) {
+        return start(host, job, null, null, null, false, null);
     }
 
     @Override
@@ -151,12 +235,21 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
         mErrorListener = errorListener;
     }
 
+    private void setCompleteListener(OnTaskCompleteListener completeListener) {
+        mCompleteListener = completeListener;
+    }
+
     OnTaskResultListener<? super Result> getResultListener() {
         return mResultListener;
     }
 
     OnTaskErrorListener getErrorListener() {
         return mErrorListener;
+    }
+
+
+    OnTaskCompleteListener getCompleteListener() {
+        return mCompleteListener;
     }
 
     private void setJob(TaskJob<Result, Job> job) {
@@ -184,6 +277,7 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
     private static class TaskState<Result, Job> {
         private OnTaskResultListener<? super Result> mResultListener;
         private OnTaskErrorListener mErrorListener;
+        private OnTaskCompleteListener mOnTaskCompleteListener;
         private TaskJob<Result, Job> mJob;
         private boolean mIsExecuted;
         private Progress mProgress;
@@ -198,11 +292,13 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
             task.mProgress = mProgress;
             task.mShowProgress = mShowProgress;
             task.setData(mResult);
+            task.mCompleteListener = mOnTaskCompleteListener;
         }
 
         void save(Task<Result, Job> task) {
             mErrorListener = task.mErrorListener;
             mResultListener = task.mResultListener;
+            mOnTaskCompleteListener = task.mCompleteListener;
             mResult = task.getData();
             mIsExecuted = task.mIsExecuted;
             mJob = task.mJob;
