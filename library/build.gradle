@@ -56,7 +56,7 @@ tasks.javadoc {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:support-fragment:27.1.1'
-    api "io.reactivex.rxjava2:rxjava:$versions.library.rxjava"
-    api "io.reactivex.rxjava2:rxandroid:$versions.library.rxandroid"
+    api "io.reactivex.rxjava2:rxjava:${versions.library.rxjava}"
+    api "io.reactivex.rxjava2:rxandroid:${versions.library.rxandroid}"
+    implementation "androidx.fragment:fragment:${versions.library.support}"
 }

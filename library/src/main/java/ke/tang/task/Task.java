@@ -1,20 +1,22 @@
 package ke.tang.task;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.UUID;
-import java.util.WeakHashMap;
 
 import ke.tang.task.executor.TaskExecutors;
 
 public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> implements OnProgressCancelListener {
     private static final String EXTRA_UUID = "UUID";
-    private static WeakHashMap<String, TaskState<?, ?>> sCachedStates = new WeakHashMap<>();
+    private static HashMap<String, TaskState<?, ?>> sCachedStates = new HashMap<>();
 
     final static String LOG_TAG = "Task";
     private OnTaskResultListener<? super Result> mResultListener;
@@ -145,9 +147,9 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
         } else if (null != savedInstanceState && null == mUUID) {
             //because of the activity killed and recreate will not call onRetainNonConfigurationInstance method, setRetainInstance not effect
             mUUID = savedInstanceState.getString(EXTRA_UUID);
-            TaskState<Result, Job> state = (TaskState<Result, Job>) sCachedStates.get(mUUID);
-            if (null != state) {
-                state.restore(this);
+            TaskState<Result, Job> taskState = (TaskState<Result, Job>) sCachedStates.get(mUUID);
+            if (null != taskState) {
+                taskState.restore(this);
                 if (null != mProgress) {
                     mProgress.setOnProgressCancelListener(this);
                 }
@@ -170,7 +172,10 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
         if (!mIsExecuted) {
             execute();
         }
-        getData().deliverAllPending();
+        final TaskExecuteResult<Result> data = getData();
+        if (null != data) {
+            data.deliverAllPending();
+        }
     }
 
     private void setShowProgress(boolean showProgress) {
@@ -275,9 +280,9 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
     }
 
     private static class TaskState<Result, Job> {
-        private OnTaskResultListener<? super Result> mResultListener;
-        private OnTaskErrorListener mErrorListener;
-        private OnTaskCompleteListener mOnTaskCompleteListener;
+        private WeakReference<OnTaskResultListener<? super Result>> mResultListener;
+        private WeakReference<OnTaskErrorListener> mErrorListener;
+        private WeakReference<OnTaskCompleteListener> mOnTaskCompleteListener;
         private TaskJob<Result, Job> mJob;
         private boolean mIsExecuted;
         private Progress mProgress;
@@ -285,20 +290,20 @@ public class Task<Result, Job> extends Retain<TaskExecuteResult<Result>> impleme
         private TaskExecuteResult<Result> mResult;
 
         void restore(Task<Result, Job> task) {
-            task.mResultListener = mResultListener;
-            task.mErrorListener = mErrorListener;
+            task.mResultListener = mResultListener.get();
+            task.mErrorListener = mErrorListener.get();
+            task.mCompleteListener = mOnTaskCompleteListener.get();
             task.mJob = mJob;
             task.mIsExecuted = mIsExecuted;
             task.mProgress = mProgress;
             task.mShowProgress = mShowProgress;
             task.setData(mResult);
-            task.mCompleteListener = mOnTaskCompleteListener;
         }
 
         void save(Task<Result, Job> task) {
-            mErrorListener = task.mErrorListener;
-            mResultListener = task.mResultListener;
-            mOnTaskCompleteListener = task.mCompleteListener;
+            mErrorListener = new WeakReference<>(task.mErrorListener);
+            mResultListener = new WeakReference<>(task.mResultListener);
+            mOnTaskCompleteListener = new WeakReference<>(task.mCompleteListener);
             mResult = task.getData();
             mIsExecuted = task.mIsExecuted;
             mJob = task.mJob;
